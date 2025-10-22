@@ -23,12 +23,20 @@ The predicted papers and prediction pages tables are missing from the production
 
 ---
 
-## 🔧 Option 1: AWS CloudShell (Recommended)
+## 🔧 Option 1: AWS CloudShell (⭐ STRONGLY RECOMMENDED)
+
+### ✅ Why AWS CloudShell is the Best Option
+- **Works from anywhere** - No VPN required!
+- **Already inside AWS network** - Can access private VPC databases
+- **No local setup needed** - Everything runs in the cloud
+- **Free to use** - No additional costs
+- **Pre-authenticated** - Uses your AWS console session
 
 ### Step 1: Get Database Connection String
 ```bash
 # In AWS Console, go to App Runner > tutorchase-resources-platform-api > Configuration
 # Copy the DATABASE_URL environment variable value
+# Format: postgresql://username:password@host:5432/database
 ```
 
 ### Step 2: Open CloudShell
@@ -93,11 +101,16 @@ You should see 9 tables listed:
 
 ---
 
-## 🔧 Option 2: Local Machine (If you have database access)
+## 🔧 Option 2: Local Machine (⚠️ Requires VPN/Network Access)
+
+### ⚠️ Important Network Requirements
+- **VPN Required**: If your database is in a private VPC, you'll need to be connected to your company VPN
+- **Security Group Access**: Your IP address must be whitelisted in the database security group
+- **If this doesn't work**: Use AWS CloudShell instead (Option 1)
 
 ### Prerequisites
 - PostgreSQL client installed (`psql` command available)
-- Network access to production database
+- Network access to production database (VPN or whitelisted IP)
 - Database connection string
 
 ### Step 1: Clone Repository (if not already)
@@ -219,8 +232,20 @@ The automatic migration in the Docker container likely failed because:
 2. **Script exits on error** - Fixed by making migration non-blocking in `start.sh`
 3. **Connection issues** - Docker container may not have proper network access during startup
 4. **Environment variables** - DATABASE_URL might not be properly formatted for `psql`
+5. **Timing issues** - Migration might run before database is fully ready
+6. **Silent failures** - Errors might not be properly logged to CloudWatch
 
 Even though we fixed items 1 and 2, the migration might still be failing silently. That's why manual execution is the safest approach.
+
+### 🔍 Check CloudWatch Logs (Optional but Helpful)
+To see what's actually happening with the automatic migration:
+1. Go to **AWS Console > App Runner > tutorchase-resources-platform-api**
+2. Click **Logs** tab
+3. Click **View in CloudWatch**
+4. Search for "predicted papers migration" or "execute-predicted-papers-migration"
+5. Look for any error messages or connection failures
+
+This can help diagnose why the automatic migration isn't working.
 
 ---
 
